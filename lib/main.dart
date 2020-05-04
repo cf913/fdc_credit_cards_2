@@ -140,6 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
 
   double bottomNavY = 0.0;
+  int currentPage = 0;
 
   @override
   void initState() {
@@ -154,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double mapRange(double input, double inputStart, double inputEnd,
       double outputStart, double outputEnd) {
     double slope = (outputEnd - outputStart) / (inputEnd - inputStart);
-    return outputStart + (slope * (input - inputStart)).round();
+    return outputStart + (slope * (input - inputStart));
   }
 
   @override
@@ -194,19 +195,33 @@ class _MyHomePageState extends State<MyHomePage> {
                     builder:
                         (BuildContext context, BoxConstraints constraints) {
                       double paddingHorizontal = mapRange(
-                          constraints.maxHeight, minHeight, maxHeight, 16, 32);
+                          constraints.maxHeight, minHeight, maxHeight, 0, 8);
+                      if (paddingHorizontal < 0) paddingHorizontal = 0;
                       double paddingTop = mapRange(
                           constraints.maxHeight, minHeight, maxHeight, 48, 110);
+                      if (paddingTop < 0) paddingTop = 0;
+
+                      double paddingBottom = 80;
 
                       double creditCardBorder = mapRange(
-                          constraints.maxHeight, minHeight, maxHeight, 30, 15);
+                          constraints.maxHeight, minHeight, maxHeight, 25, 15);
+
+                      double scaleCurrent = mapRange(
+                          constraints.maxHeight, minHeight, maxHeight, 1.02, 1);
+
+                      double scaleOther = mapRange(
+                          constraints.maxHeight, minHeight, maxHeight, 0.8, 1);
+
+                      double theOpacity = mapRange(
+                          constraints.maxHeight, minHeight, maxHeight, 0, 1);
+                      if (theOpacity < 0) theOpacity = 0;
 
                       return StatefulBuilder(
                         builder: (BuildContext context,
                             void Function(void Function()) setState) {
                           setState(() {
                             bottomNavY = mapRange(constraints.maxHeight,
-                                maxHeight, minHeight, 0, 100);
+                                maxHeight, minHeight, 0, 110);
                           });
                           return Stack(
                             children: <Widget>[
@@ -214,29 +229,238 @@ class _MyHomePageState extends State<MyHomePage> {
                                 top: 40,
                                 left: 0,
                                 right: 0,
-                                child: WalletRow(grey: grey),
+                                child: Opacity(
+                                    opacity: theOpacity,
+                                    child: WalletRow(grey: grey)),
                               ),
-                              Container(
-                                height: maxHeight,
-                                width: w,
-                                // color: dark,
-                                child: Padding(
-                                  padding: EdgeInsets.fromLTRB(
+                              PageView.builder(
+                                itemCount: [1, 2, 3].length,
+                                onPageChanged: (i) =>
+                                    setState(() => currentPage = i),
+                                controller:
+                                    PageController(viewportFraction: 0.9),
+                                itemBuilder: (_, i) {
+                                  bool isCurrent = (i == currentPage);
+                                  // var thePadding = isCurrent
+                                  // ?
+                                  var thePadding = EdgeInsets.fromLTRB(
                                       paddingHorizontal,
                                       paddingTop,
                                       paddingHorizontal,
-                                      70),
-                                  child: Center(
+                                      paddingBottom);
+                                  // : EdgeInsets.fromLTRB(
+                                  // 8, 110, 8, paddingBottom);
+                                  return Transform.scale(
+                                    scale:
+                                        isCurrent ? scaleCurrent : scaleOther,
                                     child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(
-                                            creditCardBorder),
-                                        color: Colors.green,
+                                      // height: 400,
+                                      width: w + 15,
+                                      // color: dark,
+                                      child: Padding(
+                                        padding: thePadding,
+                                        child: Center(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              boxShadow: [
+                                                BoxShadow(
+                                                    color: Color.fromRGBO(
+                                                        255, 255, 255, .3),
+                                                    offset: Offset(
+                                                        -0.8, -0.8), //(x,y)
+                                                    blurRadius: 0,
+                                                    spreadRadius: 0.0),
+                                                BoxShadow(
+                                                    color: Color.fromRGBO(
+                                                        0, 0, 0, .7),
+                                                    offset: Offset(
+                                                        5.0, 12.0), //(x,y)
+                                                    blurRadius: 35.0,
+                                                    spreadRadius: -2.0),
+                                              ],
+                                              color: Color(0xff363944),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      creditCardBorder),
+                                              image: DecorationImage(
+                                                image: AssetImage(
+                                                    "assets/images/bg.jpg"),
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                // color: Color(0xff363944),
+                                                gradient: LinearGradient(
+                                                  begin: Alignment(-0.5, 0),
+                                                  end: Alignment(9, 0),
+                                                  colors: [
+                                                    Color(0xff363944),
+                                                    Colors.transparent
+                                                  ],
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        creditCardBorder),
+                                              ),
+                                              padding: EdgeInsets.fromLTRB(
+                                                  24, 25, 24, 0),
+                                              child: Stack(
+                                                children: [
+                                                  Column(
+                                                    children: <Widget>[
+                                                      Row(
+                                                        children: <Widget>[
+                                                          Container(
+                                                            padding:
+                                                                EdgeInsets.all(
+                                                                    6),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                                    // color:
+                                                                    //     Color(0xff2F3135),
+                                                                    border:
+                                                                        Border
+                                                                            .all(
+                                                                      color:
+                                                                          grey,
+                                                                      width: 1,
+                                                                    ),
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            6)),
+                                                            child: Icon(
+                                                              Icons.euro_symbol,
+                                                              size: 12,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                          ),
+                                                          SizedBox(width: 8),
+                                                          RichText(
+                                                            text: TextSpan(
+                                                                children: [
+                                                                  TextSpan(
+                                                                      text:
+                                                                          'EUR',
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              12,
+                                                                          letterSpacing:
+                                                                              1.4))
+                                                                ]),
+                                                          ),
+                                                          Spacer(),
+                                                          RichText(
+                                                            text: TextSpan(
+                                                              children: [
+                                                                TextSpan(
+                                                                  text: '· ',
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          14,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w900),
+                                                                ),
+                                                                TextSpan(
+                                                                  text: '5806',
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          12,
+                                                                      letterSpacing:
+                                                                          1.4),
+                                                                )
+                                                              ],
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                    .only(
+                                                                top: 25.0),
+                                                        child: Row(
+                                                          children: <Widget>[
+                                                            Text(
+                                                              '1855.00',
+                                                              style: TextStyle(
+                                                                  fontSize: 27,
+                                                                  color: Colors
+                                                                      .white),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Positioned(
+                                                    bottom: 27,
+                                                    left: 0,
+                                                    right: 0,
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .end,
+                                                      children: <Widget>[
+                                                        Opacity(
+                                                          opacity: theOpacity,
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: <Widget>[
+                                                              Text(
+                                                                'Holder',
+                                                                style: TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                    color: Color(
+                                                                        0xff666D79),
+                                                                    fontSize:
+                                                                        10),
+                                                              ),
+                                                              SizedBox(
+                                                                height: 3,
+                                                              ),
+                                                              Text(
+                                                                'Shane Cooper',
+                                                                style: TextStyle(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    fontSize:
+                                                                        12),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          'VISA',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              fontSize: 18),
+                                                        )
+                                                      ],
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                      child: Container(),
                                     ),
-                                  ),
-                                ),
+                                  );
+                                },
                               ),
                               Positioned(
                                 bottom: 5,
@@ -268,7 +492,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             text: transactions[index]['amount'],
                             color: primary),
                         leading: CircleAvatar(
-                          backgroundColor: Color(0xffDCDFE0),
+                          backgroundColor: dark,
                           radius: 20,
                           // child: Image.asset(
                           //   transactions[index]['logo'],
@@ -277,7 +501,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           //   width: transactions[index]['width'],
                           //   fit: BoxFit.contain,
                           // ),
-                          child: Text('$index'),
+                          child: Icon(Icons.shopping_cart, color: grey),
                         ),
                         title: BigText(
                             text: transactions[index]['name'], color: primary),
@@ -305,7 +529,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
         floatingActionButton: Transform.translate(
-          offset: Offset(0, bottomNavY),
+          offset: Offset(0, bottomNavY - 10),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.vertical(
@@ -354,7 +578,7 @@ class SmallText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(text,
         style:
-            TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600));
+            TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w400));
   }
 }
 
@@ -368,7 +592,7 @@ class BigText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(text,
         style:
-            TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.w600));
+            TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.w400));
   }
 }
 
@@ -382,7 +606,7 @@ class AmountText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(text,
         style:
-            TextStyle(color: color, fontSize: 19, fontWeight: FontWeight.w500));
+            TextStyle(color: color, fontSize: 17, fontWeight: FontWeight.w400));
   }
 }
 
